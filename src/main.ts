@@ -1,9 +1,11 @@
 import { createAuth0Client, type Auth0Client } from '@auth0/auth0-spa-js'
+import { invoke } from '@tauri-apps/api/core'
 import {
   AUTH0_AUDIENCE,
   AUTH0_CLIENT_ID,
   AUTH0_DOMAIN,
   TOOLS_API_BASE,
+  TOOLS_KNOWN_ISSUES_URL,
   TOOLS_PLANS_URL,
 } from './config'
 
@@ -23,6 +25,12 @@ type MePayload = {
   }
 }
 
+type DesktopAuthInfo = {
+  signed_in: boolean
+  email: string | null
+  access_token?: string | null
+}
+
 const VIEW_TITLES: Record<View, string> = {
   home: 'Status',
   scan: 'Scans',
@@ -37,6 +45,10 @@ let auth0: Auth0Client | null = null
 let accessToken = ''
 let me: MePayload | null = null
 let scamAlerts = 0
+
+function isTauri(): boolean {
+  return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
+}
 
 function $(id: string): HTMLElement {
   const el = document.getElementById(id)
@@ -56,6 +68,18 @@ function initials(name: string, email: string): string {
   const parts = base.split(/[\s@.]+/).filter(Boolean)
   if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
   return base.slice(0, 2).toUpperCase()
+}
+
+function showAuthError(message: string) {
+  const box = $('auth-error')
+  const text = $('auth-error-text')
+  text.textContent = message
+  box.classList.remove('hidden')
+}
+
+function clearAuthError() {
+  $('auth-error').classList.add('hidden')
+  $('auth-error-text').textContent = ''
 }
 
 function show(view: View) {
@@ -86,8 +110,7 @@ function setStatus(title: string, sub: string, cardTitle?: string, cardSub?: str
   $('status-title').textContent = title
   $('status-sub').textContent = sub
   $('status-card-title').textContent = cardTitle || (title === 'Looking good' ? 'Protected' : title)
-  $('status-card-sub').textContent =
-    cardSub || 'Watching for viruses & scams'
+  $('status-card-sub').textContent = cardSub || 'Watching for viruses & scams'
   $('metric-last').textContent = 'Just now'
 }
 
@@ -154,7 +177,28 @@ async function loadProfile() {
   renderProfile()
 }
 
-async function ensureAuth() {
+async function ensureAuthDesktop() {
+  try {
+    const info = await invoke<DesktopAuthInfo>('get_auth')
+    if (info.signed_in) {
+      accessToken = info.access_token || ''
+      renderAuthUi(true, initials('', info.email || ''), info.email || 'Account')
+      await loadProfile()
+    } else {
+      accessToken = ''
+      me = null
+      renderAuthUi(false)
+      renderProfile()
+    }
+  } catch {
+    accessToken = ''
+    me = null
+    renderAuthUi(false)
+    renderProfile()
+  }
+}
+
+async function ensureAuthSpa() {
   auth0 = await createAuth0Client({
     domain: AUTH0_DOMAIN,
     clientId: AUTH0_CLIENT_ID,
@@ -184,27 +228,67 @@ async function ensureAuth() {
   }
 }
 
+async function ensureAuth() {
+  clearAuthError()
+  if (isTauri()) await ensureAuthDesktop()
+  else await ensureAuthSpa()
+}
+
 async function signIn() {
-  if (!auth0) return
-  await auth0.loginWithRedirect()
+  clearAuthError()
+  const authBtn = $('btn-auth') as HTMLButtonElement
+  authBtn.disabled = true
+  try {
+    if (isTauri()) {
+      const info = await invoke<DesktopAuthInfo>('sign_in')
+      accessToken = info.access_token || ''
+      renderAuthUi(true, initials('', info.email || ''), info.email || 'Account')
+      await loadProfile()
+      return
+    }
+    if (!auth0) return
+    await auth0.loginWithRedirect()
+  } catch (err) {
+    const msg = String(err)
+    showAuthError(msg)
+    show('profile')
+  } finally {
+    authBtn.disabled = false
+  }
 }
 
 async function signOut() {
-  if (!auth0) return
+  clearAuthError()
   accessToken = ''
   me = null
+  if (isTauri()) {
+    try {
+      await invoke<DesktopAuthInfo>('sign_out')
+    } catch {
+      /* ignore */
+    }
+    renderAuthUi(false)
+    renderProfile()
+    return
+  }
+  if (!auth0) return
   await auth0.logout({ logoutParams: { returnTo: window.location.origin } })
 }
 
 function runScan(kind: 'Quick Scan' | 'Full Scan') {
   show('home')
   setScanning(true)
-  setStatus('Scanning…', kind === 'Quick Scan' ? 'Checking common threat locations' : 'Checking your whole computer', 'Scan in progress', kind)
+  setStatus(
+    'Scanning…',
+    kind === 'Quick Scan' ? 'Checking common threat locations' : 'Checking your whole computer',
+    'Scan in progress',
+    kind,
+  )
   $('scan-log').textContent = `${kind} started…\nLooking for anything that could harm your computer.\n`
   const ms = kind === 'Quick Scan' ? 1400 : 2200
   window.setTimeout(() => {
     setScanning(false)
-    setStatus('Looking good', 'No problems found on the last check', 'Protected', 'Your device is being watched for viruses and scams')
+    setStatus('Looking good', 'No problems found on the last check', 'Protected', 'Watching for viruses & scams')
     $('scan-log').textContent += 'Result: safe to use.\n'
     pushHistory(`${kind}: safe to use`)
     show('home')
@@ -221,16 +305,18 @@ function checkScam(text: string) {
   const lower = raw.toLowerCase()
   const hits: string[] = []
   if (/bit\.ly|tinyurl|t\.co\//.test(lower)) hits.push('Hidden or shortened link — hard to see where it really goes')
-  if (/urgent|act now|verify account|gift card|wire transfer/.test(lower)) hits.push('Tries to rush you into paying or sharing details')
-  if (/https?:\/\/\d+\.\d+\.\d+\.\d+/.test(lower)) hits.push('Odd web address that does not look like a normal company site')
+  if (/urgent|act now|verify account|gift card|wire transfer/.test(lower))
+    hits.push('Tries to rush you into paying or sharing details')
+  if (/https?:\/\/\d+\.\d+\.\d+\.\d+/.test(lower))
+    hits.push('Odd web address that does not look like a normal company site')
   if (hits.length) {
     scamAlerts += 1
     $('metric-scam').textContent = String(scamAlerts)
-    log.textContent =
-      `This looks unsafe. Do not open the link or send money until you confirm with the real person or company.\n\nWhy we are worried:\n- ${hits.join('\n- ')}`
+    log.textContent = `This looks unsafe. Do not open the link or send money until you confirm with the real person or company.\n\nWhy we are worried:\n- ${hits.join('\n- ')}`
     pushHistory('Scam Check: looks unsafe')
   } else {
-    log.textContent = 'No virus or scam found in the usual warning signs. Still be careful if something feels wrong.'
+    log.textContent =
+      'No virus or scam found in the usual warning signs. Still be careful if something feels wrong.'
     pushHistory('Scam Check: no scam found')
   }
 }
@@ -254,6 +340,9 @@ $('btn-profile').addEventListener('click', () => {
   show('profile')
   void loadProfile()
 })
+$('btn-known-issues').addEventListener('click', () =>
+  window.open(TOOLS_KNOWN_ISSUES_URL, '_blank', 'noreferrer'),
+)
 
 const drop = $('drop')
 const input = $('file-input') as HTMLInputElement
@@ -261,8 +350,7 @@ $('btn-pick').addEventListener('click', () => input.click())
 input.addEventListener('change', () => {
   const names = input.files ? Array.from(input.files).map((f) => f.name) : []
   if (!names.length) return
-  $('scan-log').textContent =
-    `Ready to check:\n${names.map((n) => `- ${n}`).join('\n')}\n\nYour file stays on this computer while we look for problems.`
+  $('scan-log').textContent = `Ready to check:\n${names.map((n) => `- ${n}`).join('\n')}\n\nYour file stays on this computer while we look for problems.`
   pushHistory(`File check ready: ${names.length}`)
 })
 ;['dragenter', 'dragover'].forEach((ev) => {
@@ -281,8 +369,7 @@ drop.addEventListener('drop', (e) => {
   const files = (e as DragEvent).dataTransfer?.files
   const names = files ? Array.from(files).map((f) => f.name) : []
   if (!names.length) return
-  $('scan-log').textContent =
-    `Ready to check:\n${names.map((n) => `- ${n}`).join('\n')}\n\nYour file stays on this computer while we look for problems.`
+  $('scan-log').textContent = `Ready to check:\n${names.map((n) => `- ${n}`).join('\n')}\n\nYour file stays on this computer while we look for problems.`
   pushHistory(`File check ready: ${names.length}`)
 })
 

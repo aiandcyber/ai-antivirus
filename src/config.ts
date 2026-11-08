@@ -14,3 +14,6 @@ export const TOOLS_API_BASE =
   'https://api.tools.ai-forall.org'
 export const TOOLS_PLANS_URL = 'https://tools.ai-forall.org/plans'
 export const TOOLS_PROFILE_URL = 'https://tools.ai-forall.org/profile'
+export const TOOLS_KNOWN_ISSUES_URL = 'https://tools.ai-forall.org/help/known-issues'
+export const PRIVACY_URL = 'https://ai-forall.org/privacy.html'
+export const COMPANY_FOOTER = '© 2026 AI-forAll Hong Kong Limited 全民人工智能香港有限公司'
