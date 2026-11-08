@@ -58,8 +58,8 @@
         </header>
 
         <main class="panel">
-          <section id="view-home" class="view">
-            <div class="status-hero">
+          <section id="view-home" class="view home-dash">
+            <div class="status-banner safe" id="status-card">
               <div class="shield-live" aria-hidden="true">
                 <span class="ring ring-a"></span>
                 <span class="ring ring-b"></span>
@@ -71,37 +71,55 @@
                 <h2 id="status-title">Looking good</h2>
                 <p id="status-sub">No problems found on the last check</p>
               </div>
-            </div>
-
-            <div class="status-card safe" id="status-card">
-              <span class="dot-live" aria-hidden="true"></span>
-              <div>
-                <strong id="status-card-title">Protected</strong>
-                <span id="status-card-sub">Your device is being watched for viruses and scams</span>
+              <div class="status-badge">
+                <span class="dot-live" aria-hidden="true"></span>
+                <div>
+                  <strong id="status-card-title">Protected</strong>
+                  <span id="status-card-sub">Watching for viruses &amp; scams</span>
+                </div>
               </div>
             </div>
 
-            <div class="scan-actions">
-              <button type="button" class="btn-primary btn-lg" id="btn-quick">Quick Scan</button>
-              <button type="button" class="btn-outline btn-lg" id="btn-full">Full Scan</button>
+            <div class="scan-grid">
+              <button type="button" class="scan-tile primary" id="btn-quick">
+                <span class="scan-tile-icon material-symbols-outlined" aria-hidden="true">bolt</span>
+                <span class="scan-tile-body">
+                  <strong>Quick Scan</strong>
+                  <span>Common threat locations · ~1 min</span>
+                </span>
+                <span class="scan-tile-go material-symbols-outlined" aria-hidden="true">chevron_right</span>
+              </button>
+              <button type="button" class="scan-tile" id="btn-full">
+                <span class="scan-tile-icon material-symbols-outlined" aria-hidden="true">travel_explore</span>
+                <span class="scan-tile-body">
+                  <strong>Full Scan</strong>
+                  <span>Entire device · thorough check</span>
+                </span>
+                <span class="scan-tile-go material-symbols-outlined" aria-hidden="true">chevron_right</span>
+              </button>
             </div>
-            <p class="scan-hint muted">
-              <strong>Quick Scan</strong> checks the places threats usually hide — fast.
-              <strong>Full Scan</strong> checks your whole computer — takes longer.
-            </p>
 
             <div class="metric-row">
               <article class="metric">
-                <span>Last scan</span>
-                <strong id="metric-last">Just now</strong>
+                <span class="material-symbols-outlined" aria-hidden="true">schedule</span>
+                <div>
+                  <span>Last scan</span>
+                  <strong id="metric-last">Just now</strong>
+                </div>
               </article>
               <article class="metric">
-                <span>Threats blocked</span>
-                <strong id="metric-blocked">0</strong>
+                <span class="material-symbols-outlined" aria-hidden="true">gpp_bad</span>
+                <div>
+                  <span>Threats blocked</span>
+                  <strong id="metric-blocked">0</strong>
+                </div>
               </article>
               <article class="metric">
-                <span>Scam alerts</span>
-                <strong id="metric-scam">0</strong>
+                <span class="material-symbols-outlined" aria-hidden="true">report</span>
+                <div>
+                  <span>Scam alerts</span>
+                  <strong id="metric-scam">0</strong>
+                </div>
               </article>
             </div>
           </section>
