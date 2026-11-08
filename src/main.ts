@@ -87,7 +87,7 @@ function setStatus(title: string, sub: string, cardTitle?: string, cardSub?: str
   $('status-sub').textContent = sub
   $('status-card-title').textContent = cardTitle || (title === 'Looking good' ? 'Protected' : title)
   $('status-card-sub').textContent =
-    cardSub || 'Your device is being watched for viruses and scams'
+    cardSub || 'Watching for viruses & scams'
   $('metric-last').textContent = 'Just now'
 }
 
