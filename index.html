@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Powered Anti-Virus</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div id="app" class="shell">
+      <aside class="rail">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <div>
+            <strong>AI Anti-Virus</strong>
+            <small>ai-cyber</small>
+          </div>
+        </div>
+        <nav>
+          <button type="button" class="nav active" data-view="home">Home</button>
+          <button type="button" class="nav" data-view="scan">Scan</button>
+          <button type="button" class="nav" data-view="scam">Scam check</button>
+          <button type="button" class="nav" data-view="history">History</button>
+        </nav>
+        <p class="rail-foot">Protection on this device</p>
+      </aside>
+
+      <main class="main">
+        <section id="view-home" class="view">
+          <header class="hero">
+            <h1>You are protected</h1>
+            <p>Real-time checks run on your PC. Signature updates download when needed.</p>
+          </header>
+          <div class="status-card safe">
+            <div class="pulse" aria-hidden="true"></div>
+            <div>
+              <strong id="status-title">Secure</strong>
+              <span id="status-sub">No threats found · Last quick check just now</span>
+            </div>
+          </div>
+          <div class="actions">
+            <button type="button" class="btn primary" id="btn-quick">Quick scan</button>
+            <button type="button" class="btn" id="btn-full">Full scan</button>
+          </div>
+          <ul class="tiles">
+            <li><span>Engine</span><strong>Ready (YARA / ClamAV next)</strong></li>
+            <li><span>Definitions</span><strong>On-demand download</strong></li>
+            <li><span>LLM</span><strong>Off for routine scans</strong></li>
+          </ul>
+        </section>
+
+        <section id="view-scan" class="view hidden">
+          <h1>Scan files</h1>
+          <p class="lede">Drop a file or folder. Scanning stays on this device.</p>
+          <div class="drop" id="drop">
+            <strong>Drop files here</strong>
+            <span>or</span>
+            <button type="button" class="btn" id="btn-pick">Choose files</button>
+            <input id="file-input" type="file" multiple hidden />
+          </div>
+          <pre id="scan-log" class="log" aria-live="polite">No scan yet.</pre>
+        </section>
+
+        <section id="view-scam" class="view hidden">
+          <h1>Scam check</h1>
+          <p class="lede">Paste a message or link. Local heuristics first — no LLM unless required.</p>
+          <textarea id="scam-text" rows="6" placeholder="Paste SMS, email, or URL…"></textarea>
+          <button type="button" class="btn primary" id="btn-scam">Check message</button>
+          <pre id="scam-log" class="log" aria-live="polite"></pre>
+        </section>
+
+        <section id="view-history" class="view hidden">
+          <h1>History</h1>
+          <p class="lede">Recent checks on this device.</p>
+          <ul id="history-list" class="history">
+            <li class="muted">Nothing logged yet.</li>
+          </ul>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
