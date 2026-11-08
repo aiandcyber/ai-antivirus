@@ -116,11 +116,13 @@
                   <strong id="metric-blocked">0</strong>
                 </div>
               </article>
-              <article class="metric">
+              <article class="metric" id="metric-scam-card">
                 <span class="material-symbols-outlined" aria-hidden="true">report</span>
                 <div>
                   <span>Scam alerts</span>
-                  <strong id="metric-scam">0</strong>
+                  <strong id="metric-scam-wrap">
+                    <span id="metric-scam">0</span>
+                  </strong>
                 </div>
               </article>
             </div>
@@ -171,6 +173,10 @@
                 <h2>Scam Check</h2>
                 <p>Paste a suspicious SMS, email, or chat before you tap any link.</p>
               </div>
+            </div>
+            <div id="scam-alerts-box" class="info-card scam-alerts-box hidden">
+              <h3>Open alerts</h3>
+              <ul id="scam-alerts-list" class="scam-alerts-list"></ul>
             </div>
             <textarea id="scam-text" rows="6" placeholder="Paste the message or link here…"></textarea>
             <button type="button" class="btn-primary" id="btn-scam">Check message</button>

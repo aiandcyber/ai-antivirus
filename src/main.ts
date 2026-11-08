@@ -46,7 +46,15 @@ let accessToken = ''
 let me: MePayload | null = null
 /** Auth0 / desktop identity — kept if Tools /api/me fails (e.g. CORS). */
 let sessionUser: { name: string; email: string } = { name: '', email: '' }
-let scamAlerts = 0
+type ScamAlert = {
+  id: string
+  at: string
+  preview: string
+  detail: string
+  source: string
+}
+
+const scamAlerts: ScamAlert[] = []
 let selectedFiles: File[] = []
 let scanBusy = false
 
@@ -373,6 +381,62 @@ function runFileScan() {
   }, 1600)
 }
 
+function updateScamMetric() {
+  const count = scamAlerts.length
+  const wrap = $('metric-scam-wrap')
+  const card = $('metric-scam-card')
+  if (count === 0) {
+    wrap.innerHTML = `<span id="metric-scam">0</span>`
+    card.classList.remove('metric-link')
+    card.removeAttribute('role')
+    card.removeAttribute('tabindex')
+    card.title = ''
+    return
+  }
+  wrap.innerHTML = `<a href="#scam-alerts" id="metric-scam" class="metric-scam-link">${count}</a>`
+  card.classList.add('metric-link')
+  card.title = 'Open scam alerts'
+  card.setAttribute('role', 'link')
+  card.setAttribute('tabindex', '0')
+}
+
+function renderScamAlertsList() {
+  const box = $('scam-alerts-box')
+  const list = $('scam-alerts-list')
+  if (!scamAlerts.length) {
+    box.classList.add('hidden')
+    list.innerHTML = ''
+    return
+  }
+  box.classList.remove('hidden')
+  list.innerHTML = scamAlerts
+    .map(
+      (a) =>
+        `<li><button type="button" class="scam-alert-item" data-alert-id="${escapeHtml(a.id)}"><strong>${escapeHtml(a.preview)}</strong><span class="muted">${escapeHtml(a.at)}</span></button></li>`,
+    )
+    .join('')
+  list.querySelectorAll('.scam-alert-item').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = (btn as HTMLElement).dataset.alertId
+      if (id) openScamAlert(id)
+    })
+  })
+}
+
+function openScamAlert(id?: string) {
+  const alert = id ? scamAlerts.find((a) => a.id === id) : scamAlerts[0]
+  show('scam')
+  renderScamAlertsList()
+  if (!alert) {
+    $('scam-log').textContent = 'No open scam alerts.'
+    return
+  }
+  const ta = $('scam-text') as HTMLTextAreaElement
+  ta.value = alert.source
+  $('scam-log').textContent = alert.detail
+  $('scam-log').scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+}
+
 function checkScam(text: string) {
   const raw = text.trim()
   const log = $('scam-log')
@@ -388,9 +452,20 @@ function checkScam(text: string) {
   if (/https?:\/\/\d+\.\d+\.\d+\.\d+/.test(lower))
     hits.push('Odd web address that does not look like a normal company site')
   if (hits.length) {
-    scamAlerts += 1
-    $('metric-scam').textContent = String(scamAlerts)
-    log.textContent = `This looks unsafe. Do not open the link or send money until you confirm with the real person or company.\n\nWhy we are worried:\n- ${hits.join('\n- ')}`
+    const detail =
+      `This looks unsafe. Do not open the link or send money until you confirm with the real person or company.\n\nWhy we are worried:\n- ${hits.join('\n- ')}`
+    const preview = raw.length > 64 ? `${raw.slice(0, 64)}…` : raw
+    const alert: ScamAlert = {
+      id: `scam-${Date.now()}`,
+      at: new Date().toLocaleString(),
+      preview,
+      detail,
+      source: raw,
+    }
+    scamAlerts.unshift(alert)
+    updateScamMetric()
+    renderScamAlertsList()
+    log.textContent = detail
     pushHistory('Scam Check: looks unsafe')
   } else {
     log.textContent =
@@ -455,4 +530,19 @@ $('btn-scam').addEventListener('click', () => {
   checkScam(($('scam-text') as HTMLTextAreaElement).value)
 })
 
+function onScamMetricActivate(e: Event) {
+  e.preventDefault()
+  if (!scamAlerts.length) return
+  openScamAlert(scamAlerts[0].id)
+}
+$('metric-scam-card').addEventListener('click', onScamMetricActivate)
+$('metric-scam-card').addEventListener('keydown', (e) => {
+  if ((e as KeyboardEvent).key === 'Enter' || (e as KeyboardEvent).key === ' ') onScamMetricActivate(e)
+})
+$('metric-scam-wrap').addEventListener('click', (e) => {
+  const t = e.target as HTMLElement
+  if (t.id === 'metric-scam' || t.classList.contains('metric-scam-link')) onScamMetricActivate(e)
+})
+
+updateScamMetric()
 void ensureAuth().then(() => show('home'))
