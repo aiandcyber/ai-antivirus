@@ -44,6 +44,8 @@ const history: string[] = []
 let auth0: Auth0Client | null = null
 let accessToken = ''
 let me: MePayload | null = null
+/** Auth0 / desktop identity — kept if Tools /api/me fails (e.g. CORS). */
+let sessionUser: { name: string; email: string } = { name: '', email: '' }
 let scamAlerts = 0
 
 function isTauri(): boolean {
@@ -129,12 +131,17 @@ function renderAuthUi(signedIn: boolean, label?: string, displayName?: string) {
   }
 }
 
+function setSessionUser(name?: string | null, email?: string | null) {
+  sessionUser = {
+    name: (name || '').trim(),
+    email: (email || '').trim(),
+  }
+}
+
 function renderProfile() {
-  const err = $('profile-error')
   const signedOut = $('profile-signed-out')
   const card = $('profile-card')
-  err.classList.add('hidden')
-  if (!accessToken) {
+  if (!accessToken && !sessionUser.email && !sessionUser.name) {
     signedOut.classList.remove('hidden')
     card.classList.add('hidden')
     return
@@ -142,24 +149,35 @@ function renderProfile() {
   signedOut.classList.add('hidden')
   card.classList.remove('hidden')
   const user = me?.user
-  const name = user?.display_name || user?.email || 'Signed in'
-  const email = user?.email || '—'
+  const name =
+    user?.display_name ||
+    user?.email ||
+    sessionUser.name ||
+    sessionUser.email ||
+    'Signed in'
+  const email = user?.email || sessionUser.email || '—'
   $('profile-name').textContent = name
   $('profile-email').textContent = email
-  $('profile-initials').textContent = initials(user?.display_name || '', user?.email || '')
+  $('profile-initials').textContent = initials(
+    user?.display_name || sessionUser.name || '',
+    user?.email || sessionUser.email || '',
+  )
   $('profile-plan').textContent = me?.subscription?.current || '—'
-  $('profile-credits').textContent = String(me?.subscription?.credits ?? user?.credits ?? '—')
+  $('profile-credits').textContent = String(
+    me?.subscription?.credits ?? user?.credits ?? '—',
+  )
   $('profile-role').textContent = user?.role || '—'
-  $('profile-premium').textContent = user?.premium ? 'Yes' : 'No'
-  renderAuthUi(true, initials(user?.display_name || '', user?.email || ''), name)
+  $('profile-premium').textContent = user?.premium == null ? '—' : user.premium ? 'Yes' : 'No'
+  renderAuthUi(true, initials(name, email === '—' ? '' : email), name)
 }
 
 async function loadProfile() {
   if (!accessToken) {
-    me = null
     renderProfile()
     return
   }
+  // Show Auth0/desktop identity immediately — do not wait on Tools API.
+  renderProfile()
   try {
     const res = await fetch(`${TOOLS_API_BASE}/api/me`, {
       headers: { Authorization: `Bearer ${accessToken}` },
@@ -168,10 +186,10 @@ async function loadProfile() {
     me = (await res.json()) as MePayload
     $('profile-error').classList.add('hidden')
   } catch {
-    me = null
+    // Keep sessionUser / prior me — never blank the name after a failed /api/me.
     const err = $('profile-error')
     err.textContent =
-      'We could not load your Tools account details right now. You can still run scans on this device.'
+      'Plan and credits could not load from Tools right now. Your sign-in is still active.'
     err.classList.remove('hidden')
   }
   renderProfile()
@@ -182,17 +200,20 @@ async function ensureAuthDesktop() {
     const info = await invoke<DesktopAuthInfo>('get_auth')
     if (info.signed_in) {
       accessToken = info.access_token || ''
+      setSessionUser(info.email, info.email)
       renderAuthUi(true, initials('', info.email || ''), info.email || 'Account')
       await loadProfile()
     } else {
       accessToken = ''
       me = null
+      setSessionUser('', '')
       renderAuthUi(false)
       renderProfile()
     }
   } catch {
     accessToken = ''
     me = null
+    setSessionUser('', '')
     renderAuthUi(false)
     renderProfile()
   }
@@ -218,11 +239,17 @@ async function ensureAuthSpa() {
   if (await auth0.isAuthenticated()) {
     accessToken = (await auth0.getTokenSilently().catch(() => '')) || ''
     const user = await auth0.getUser()
-    renderAuthUi(true, initials(user?.name || '', user?.email || ''), user?.name || user?.email)
+    setSessionUser(user?.name || user?.email, user?.email)
+    renderAuthUi(
+      true,
+      initials(user?.name || '', user?.email || ''),
+      user?.name || user?.email,
+    )
     await loadProfile()
   } else {
     accessToken = ''
     me = null
+    setSessionUser('', '')
     renderAuthUi(false)
     renderProfile()
   }
@@ -242,6 +269,7 @@ async function signIn() {
     if (isTauri()) {
       const info = await invoke<DesktopAuthInfo>('sign_in')
       accessToken = info.access_token || ''
+      setSessionUser(info.email, info.email)
       renderAuthUi(true, initials('', info.email || ''), info.email || 'Account')
       await loadProfile()
       return
@@ -261,6 +289,7 @@ async function signOut() {
   clearAuthError()
   accessToken = ''
   me = null
+  setSessionUser('', '')
   if (isTauri()) {
     try {
       await invoke<DesktopAuthInfo>('sign_out')
