@@ -13,5 +13,14 @@ export default defineConfig({
       ? { protocol: 'ws', host, port: 1431 }
       : undefined,
     watch: { ignored: ['**/src-tauri/**'] },
+    // Avoid browser CORS during local Vite preview (desktop Tauri still hits API directly).
+    proxy: {
+      '/tools-api': {
+        target: 'https://api.tools.ai-forall.org',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/tools-api/, ''),
+      },
+    },
   },
 })
