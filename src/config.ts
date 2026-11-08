@@ -8,10 +8,18 @@ export const AUTH0_CLIENT_ID =
 export const AUTH0_AUDIENCE =
   (import.meta.env.VITE_AUTH0_AUDIENCE as string | undefined)?.trim() ||
   'https://api.ai-forall.org'
-/** Tools API — profile source of truth */
-export const TOOLS_API_BASE =
-  (import.meta.env.VITE_TOOLS_API_BASE as string | undefined)?.trim().replace(/\/$/, '') ||
-  'https://api.tools.ai-forall.org'
+/** Tools API — profile source of truth (same-origin proxy in Vite local preview). */
+const TOOLS_API_DEFAULT = 'https://api.tools.ai-forall.org'
+function resolveToolsApiBase(): string {
+  const fromEnv = (import.meta.env.VITE_TOOLS_API_BASE as string | undefined)?.trim().replace(/\/$/, '')
+  if (fromEnv) return fromEnv
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname
+    if (host === 'localhost' || host === '127.0.0.1') return '/tools-api'
+  }
+  return TOOLS_API_DEFAULT
+}
+export const TOOLS_API_BASE = resolveToolsApiBase()
 export const TOOLS_PLANS_URL = 'https://tools.ai-forall.org/plans'
 export const TOOLS_PROFILE_URL = 'https://tools.ai-forall.org/profile'
 export const TOOLS_KNOWN_ISSUES_URL = 'https://tools.ai-forall.org/help/known-issues'

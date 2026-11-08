@@ -13,5 +13,14 @@ export default defineConfig({
       ? { protocol: 'ws', host, port: 1431 }
       : undefined,
     watch: { ignored: ['**/src-tauri/**'] },
+    // Local browser preview: avoid CORS on api.tools (Tauri still uses TOOLS_API_DEFAULT).
+    proxy: {
+      '/tools-api': {
+        target: 'https://api.tools.ai-forall.org',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/tools-api/, ''),
+      },
+    },
   },
 })
