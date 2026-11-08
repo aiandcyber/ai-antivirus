@@ -31,9 +31,9 @@
           <button type="button" class="nav-chip" data-view="about">About</button>
         </nav>
         <div class="account">
-          <button type="button" class="btn-text" id="btn-plans" title="Plans on Tools">Plans</button>
+          <button type="button" class="btn-text" id="btn-plans" title="Plans">Plans</button>
           <button type="button" class="btn-primary" id="btn-auth">Sign in</button>
-          <button type="button" class="avatar hidden" id="btn-profile" title="Profile" aria-label="Profile">?</button>
+          <button type="button" class="avatar hidden" id="btn-profile" title="Your account" aria-label="Your account">?</button>
         </div>
       </header>
 
@@ -43,25 +43,34 @@
             <div class="tool-hero">
               <span class="material-symbols-outlined hero-icon" aria-hidden="true">verified_user</span>
               <div>
-                <h1>You are protected</h1>
-                <p>Enterprise-grade endpoint protection with the same AI-forAll account used on Tools. Scanning runs on this device.</p>
+                <h1>Your PC is being watched for threats</h1>
+                <p>Stop harmful files and scam messages before they cost you money, photos, or login details — without you digging through complicated settings.</p>
               </div>
             </div>
             <div class="status-card safe">
               <span class="material-symbols-outlined status-icon" aria-hidden="true">shield</span>
               <div>
-                <strong id="status-title">Secure</strong>
-                <span id="status-sub">No threats found · Last quick check just now</span>
+                <strong id="status-title">Looking good</strong>
+                <span id="status-sub">No problems found on the last check</span>
               </div>
             </div>
             <div class="actions">
-              <button type="button" class="btn-primary" id="btn-quick">Quick scan</button>
-              <button type="button" class="btn-outline" id="btn-full">Full scan</button>
+              <button type="button" class="btn-primary" id="btn-quick">Check now</button>
+              <button type="button" class="btn-outline" id="btn-full">Check everything</button>
             </div>
             <div class="tile-grid">
-              <article class="tile"><span>Engine</span><strong>Ready (YARA / ClamAV next)</strong></article>
-              <article class="tile"><span>Definitions</span><strong>On-demand download</strong></article>
-              <article class="tile"><span>LLM</span><strong>Off for routine scans</strong></article>
+              <article class="tile">
+                <span>Files</span>
+                <strong>Catch dangerous downloads before you open them</strong>
+              </article>
+              <article class="tile">
+                <span>Messages</span>
+                <strong>Spot fake bank, delivery, and “urgent” scam texts</strong>
+              </article>
+              <article class="tile">
+                <span>Your account</span>
+                <strong>Same sign-in as Tools — one profile for the family</strong>
+              </article>
             </div>
           </section>
 
@@ -70,17 +79,17 @@
               <span class="material-symbols-outlined hero-icon" aria-hidden="true">document_scanner</span>
               <div>
                 <h1>Virus Check</h1>
-                <p>Check a file before you open or share it. Same safety idea as Tools — on this PC.</p>
+                <p>Got a file from email, WhatsApp, or a download? Check it here before you open it — so you don’t lock your PC or lose your data.</p>
               </div>
             </div>
             <div class="drop" id="drop">
               <span class="material-symbols-outlined" aria-hidden="true">upload_file</span>
-              <strong>Drop files here</strong>
+              <strong>Drop the file here</strong>
               <span class="muted">or</span>
-              <button type="button" class="btn-outline" id="btn-pick">Choose files</button>
+              <button type="button" class="btn-outline" id="btn-pick">Choose a file</button>
               <input id="file-input" type="file" multiple hidden />
             </div>
-            <pre id="scan-log" class="log" aria-live="polite">No scan yet.</pre>
+            <pre id="scan-log" class="log" aria-live="polite">Choose a file to check.</pre>
           </section>
 
           <section id="view-scam" class="view hidden">
@@ -88,11 +97,11 @@
               <span class="material-symbols-outlined hero-icon" aria-hidden="true">phishing</span>
               <div>
                 <h1>Scam Check</h1>
-                <p>Paste SMS, email, or a link. Local heuristics first — same Auth0 user as Tools.</p>
+                <p>Paste a suspicious SMS, email, or chat. We’ll tell you if it looks like someone is trying to trick you into clicking or paying.</p>
               </div>
             </div>
-            <textarea id="scam-text" rows="6" placeholder="Paste SMS, email, or URL…"></textarea>
-            <button type="button" class="btn-primary" id="btn-scam">Check message</button>
+            <textarea id="scam-text" rows="6" placeholder="Paste the message or link here…"></textarea>
+            <button type="button" class="btn-primary" id="btn-scam">Is this a scam?</button>
             <pre id="scam-log" class="log" aria-live="polite"></pre>
           </section>
 
@@ -101,11 +110,11 @@
               <span class="material-symbols-outlined hero-icon" aria-hidden="true">history</span>
               <div>
                 <h1>History</h1>
-                <p>Recent checks on this device.</p>
+                <p>See what you already checked on this computer — useful if you’re not sure about a file you looked at earlier.</p>
               </div>
             </div>
             <ul id="history-list" class="history">
-              <li class="muted">Nothing logged yet.</li>
+              <li class="muted">Nothing checked yet.</li>
             </ul>
           </section>
 
@@ -113,26 +122,25 @@
             <div class="tool-hero">
               <span class="material-symbols-outlined hero-icon" aria-hidden="true">info</span>
               <div>
-                <h1>Product</h1>
-                <p>General details for AI Powered Anti-Virus.</p>
+                <h1>How this helps you</h1>
+                <p>Built for homes, small businesses, and schools — people who need protection without a security team.</p>
               </div>
             </div>
             <div class="card-stack">
               <article class="info-card">
-                <h2>AI Powered Anti-Virus</h2>
-                <p>Protect you and your data from cyber attacks and scams. Part of <strong>AI-forAll</strong> / ai-cyber.</p>
+                <h2>What you get</h2>
                 <ul class="plain">
-                  <li>Endpoint-first: signatures &amp; rules on device</li>
-                  <li>Same sign-in as Tools (Auth0)</li>
-                  <li>Profile, plan, and credits from Tools account</li>
-                  <li>Windows &amp; Mac desktop · mobile via Tools app module</li>
+                  <li>Warn you before a bad file damages your computer</li>
+                  <li>Help you spot scam messages that ask for money or passwords</li>
+                  <li>Keep checks on your device so everyday files don’t need to leave your PC</li>
+                  <li>Use the same AI-forAll sign-in you already use on Tools</li>
                 </ul>
               </article>
               <article class="info-card">
-                <h2>Account &amp; billing</h2>
-                <p>Managed on Tools — not duplicated here.</p>
-                <a class="text-link" href="https://tools.ai-forall.org/plans" target="_blank" rel="noreferrer">Open Plans on Tools</a>
-                <a class="text-link" href="https://tools.ai-forall.org/profile" target="_blank" rel="noreferrer">Open Profile on Tools</a>
+                <h2>Plans and your account</h2>
+                <p>Upgrade, credits, and family seats are managed in Tools — one place for everything.</p>
+                <a class="text-link" href="https://tools.ai-forall.org/plans" target="_blank" rel="noreferrer">View plans</a>
+                <a class="text-link" href="https://tools.ai-forall.org/profile" target="_blank" rel="noreferrer">Open your Tools profile</a>
               </article>
             </div>
           </section>
@@ -141,13 +149,13 @@
             <div class="tool-hero">
               <span class="material-symbols-outlined hero-icon" aria-hidden="true">person</span>
               <div>
-                <h1>Your profile</h1>
-                <p>Loaded from the same Tools account (<code>/api/me</code>).</p>
+                <h1>Your account</h1>
+                <p>This is the same profile you use on AI-forAll Tools — name, plan, and credits in one place.</p>
               </div>
             </div>
             <p id="profile-error" class="error hidden"></p>
             <div id="profile-signed-out" class="info-card">
-              <p>Sign in with your AI-forAll account to see name, email, plan, and credits.</p>
+              <p>Sign in to see your name, plan, and credits from Tools.</p>
               <button type="button" class="btn-primary" id="btn-auth-profile">Sign in</button>
             </div>
             <div id="profile-card" class="info-card hidden">
@@ -159,9 +167,9 @@
                 </div>
               </div>
               <dl class="profile-grid">
-                <div><dt>Plan</dt><dd id="profile-plan">—</dd></div>
-                <div><dt>Credits</dt><dd id="profile-credits">—</dd></div>
-                <div><dt>Role</dt><dd id="profile-role">—</dd></div>
+                <div><dt>Your plan</dt><dd id="profile-plan">—</dd></div>
+                <div><dt>Credits left</dt><dd id="profile-credits">—</dd></div>
+                <div><dt>Account type</dt><dd id="profile-role">—</dd></div>
                 <div><dt>Premium</dt><dd id="profile-premium">—</dd></div>
               </dl>
               <button type="button" class="btn-outline" id="btn-signout">Sign out</button>

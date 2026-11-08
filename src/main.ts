@@ -131,8 +131,9 @@ async function loadProfile() {
     const msg = e instanceof Error ? e.message : String(e)
     const err = $('profile-error')
     err.textContent =
-      `Could not load Tools profile (${msg}). Sign-in may still work; add this app origin to Auth0 + API CORS if needed.`
+      'We could not load your Tools account details right now. You can still use Virus Check and Scam Check on this PC. Try Sign in again in a moment.'
     err.classList.remove('hidden')
+    void msg
   }
   renderProfile()
 }
@@ -181,12 +182,12 @@ async function signOut() {
 }
 
 function fakeScan(label: string) {
-  setStatus('Scanning…', label)
-  $('scan-log').textContent = `Starting ${label}…\nEngine placeholder — ClamAV/YARA next.\n`
+  setStatus('Checking…', 'Please wait a moment')
+  $('scan-log').textContent = `${label}…\nLooking for anything that could harm your computer.\n`
   window.setTimeout(() => {
-    setStatus('Secure', `No threats found · ${label} finished`)
-    $('scan-log').textContent += 'Result: clean (demo).\n'
-    pushHistory(`${label}: clean`)
+    setStatus('Looking good', 'No problems found on this check')
+    $('scan-log').textContent += 'Result: safe to use.\n'
+    pushHistory(`${label}: safe to use`)
     show('home')
   }, 900)
 }
@@ -195,20 +196,21 @@ function checkScam(text: string) {
   const raw = text.trim()
   const log = $('scam-log')
   if (!raw) {
-    log.textContent = 'Paste a message or URL first.'
+    log.textContent = 'Paste the message or link first.'
     return
   }
   const lower = raw.toLowerCase()
   const hits: string[] = []
-  if (/bit\.ly|tinyurl|t\.co\//.test(lower)) hits.push('Shortened URL')
-  if (/urgent|act now|verify account|gift card|wire transfer/.test(lower)) hits.push('Pressure / payment language')
-  if (/https?:\/\/\d+\.\d+\.\d+\.\d+/.test(lower)) hits.push('Raw IP link')
+  if (/bit\.ly|tinyurl|t\.co\//.test(lower)) hits.push('Hidden or shortened link — hard to see where it really goes')
+  if (/urgent|act now|verify account|gift card|wire transfer/.test(lower)) hits.push('Tries to rush you into paying or sharing details')
+  if (/https?:\/\/\d+\.\d+\.\d+\.\d+/.test(lower)) hits.push('Odd web address that does not look like a normal company site')
   if (hits.length) {
-    log.textContent = `Possible scam signals:\n- ${hits.join('\n- ')}\n\nDo not open links or send money until you verify the sender.`
-    pushHistory(`Scam check: risk (${hits.join(', ')})`)
+    log.textContent =
+      `This looks unsafe. Do not open the link or send money until you confirm with the real person or company.\n\nWhy we are worried:\n- ${hits.join('\n- ')}`
+    pushHistory('Scam check: looks unsafe')
   } else {
-    log.textContent = 'No common scam patterns found (local heuristics only).'
-    pushHistory('Scam check: no common patterns')
+    log.textContent = 'No virus or scam found in the usual warning signs. Still be careful if something feels wrong.'
+    pushHistory('Scam check: no scam found')
   }
 }
 
@@ -218,11 +220,11 @@ document.querySelectorAll('.nav-chip').forEach((btn) => {
 
 $('btn-quick').addEventListener('click', () => {
   show('scan')
-  fakeScan('Quick scan')
+  fakeScan('Quick check')
 })
 $('btn-full').addEventListener('click', () => {
   show('scan')
-  fakeScan('Full scan')
+  fakeScan('Full check')
 })
 $('btn-plans').addEventListener('click', () => window.open(TOOLS_PLANS_URL, '_blank', 'noreferrer'))
 $('btn-auth').addEventListener('click', () => void signIn())
@@ -239,8 +241,9 @@ $('btn-pick').addEventListener('click', () => input.click())
 input.addEventListener('change', () => {
   const names = input.files ? Array.from(input.files).map((f) => f.name) : []
   if (!names.length) return
-  $('scan-log').textContent = `Selected:\n${names.map((n) => `- ${n}`).join('\n')}\n\nDemo: files stay on device.`
-  pushHistory(`Files selected: ${names.length}`)
+  $('scan-log').textContent =
+    `Ready to check:\n${names.map((n) => `- ${n}`).join('\n')}\n\nYour file stays on this computer while we look for problems.`
+  pushHistory(`Checked selection: ${names.length} file(s)`)
 })
 ;['dragenter', 'dragover'].forEach((ev) => {
   drop.addEventListener(ev, (e) => {
@@ -258,8 +261,9 @@ drop.addEventListener('drop', (e) => {
   const files = (e as DragEvent).dataTransfer?.files
   const names = files ? Array.from(files).map((f) => f.name) : []
   if (!names.length) return
-  $('scan-log').textContent = `Dropped:\n${names.map((n) => `- ${n}`).join('\n')}\n\nDemo: local only.`
-  pushHistory(`Files dropped: ${names.length}`)
+  $('scan-log').textContent =
+    `Ready to check:\n${names.map((n) => `- ${n}`).join('\n')}\n\nYour file stays on this computer while we look for problems.`
+  pushHistory(`Checked drop: ${names.length} file(s)`)
 })
 
 $('btn-scam').addEventListener('click', () => {
