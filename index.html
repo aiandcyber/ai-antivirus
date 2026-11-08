@@ -20,6 +20,13 @@
             <small>AI-forAll</small>
           </div>
         </div>
+        <div class="side-account">
+          <button type="button" class="btn-primary side-signin" id="btn-auth">Sign in</button>
+          <button type="button" class="side-profile hidden" id="btn-profile" title="Your account">
+            <span class="avatar" id="side-avatar">?</span>
+            <span id="side-name">Account</span>
+          </button>
+        </div>
         <nav class="side-nav" aria-label="Primary">
           <button type="button" class="side-item active" data-view="home">
             <span class="material-symbols-outlined" aria-hidden="true">shield</span>
@@ -41,23 +48,16 @@
             <span class="material-symbols-outlined" aria-hidden="true">info</span>
             About
           </button>
-        </nav>
-        <div class="side-account">
-          <button type="button" class="btn-primary side-signin" id="btn-auth">Sign in</button>
-          <button type="button" class="side-profile hidden" id="btn-profile" title="Your account">
-            <span class="avatar" id="side-avatar">?</span>
-            <span id="side-name">Account</span>
+          <button type="button" class="side-item" id="btn-plans">
+            <span class="material-symbols-outlined" aria-hidden="true">workspace_premium</span>
+            Plans
           </button>
-        </div>
+        </nav>
       </aside>
 
       <div class="stage">
-        <header class="stage-bar">
-          <h1 class="stage-title" id="stage-title">Status</h1>
-          <button type="button" class="btn-text" id="btn-plans">Plans</button>
-        </header>
-
         <main class="panel">
+          <h1 class="stage-title" id="stage-title">Status</h1>
           <section id="view-home" class="view home-dash">
             <div class="status-banner safe" id="status-card">
               <div class="shield-live" aria-hidden="true">

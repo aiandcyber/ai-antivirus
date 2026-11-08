@@ -73,7 +73,7 @@ button { cursor: pointer; }
 .side-brand strong { display: block; font-size: 0.88rem; color: #fff; }
 .side-brand small { color: rgba(232, 242, 239, 0.65); font-size: 0.7rem; }
 
-.side-nav { display: flex; flex-direction: column; gap: 0.15rem; flex: 1; }
+.side-nav { display: flex; flex-direction: column; gap: 0.15rem; }
 .side-item {
   display: flex;
   align-items: center;
@@ -94,7 +94,7 @@ button { cursor: pointer; }
   color: #5eead4;
 }
 
-.side-account { padding: 0.35rem 0.25rem 0.35rem; }
+.side-account { padding: 0 0.25rem 0.55rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 0.35rem; }
 .side-signin { width: 100%; }
 .side-profile {
   width: 100%;
@@ -120,23 +120,18 @@ button { cursor: pointer; }
 }
 
 .stage { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-.stage-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.55rem 1.1rem;
-  border-bottom: 1px solid var(--line);
-  background: var(--card);
-  flex: 0 0 auto;
+.stage-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.05rem;
+  font-weight: 700;
 }
-.stage-title { margin: 0; font-size: 1rem; font-weight: 650; }
 
 .panel {
   flex: 1;
   overflow: auto;
-  padding: 0.9rem 1.1rem 1.1rem;
+  padding: 1rem 1.15rem 1.15rem;
   width: 100%;
-  max-width: none;
+  max-width: 720px;
 }
 
 .btn-primary {
@@ -175,25 +170,24 @@ button { cursor: pointer; }
 .btn-text:hover { background: rgba(13, 110, 102, 0.08); }
 .btn-lg { min-width: 9rem; padding: 0.7rem 1.2rem; }
 
-/* Home dashboard — fills width, little dead space */
+/* Home dashboard — packed top, no stretch gap */
 .home-dash {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
-  min-height: 100%;
+  gap: 0.75rem;
 }
 
 .status-banner {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 1rem;
+  display: flex;
+  gap: 0.85rem;
   align-items: center;
   background: linear-gradient(135deg, #e8fff6 0%, #f3fffb 55%, #ffffff 100%);
   border: 1px solid #8fd4b8;
   border-radius: 12px;
-  padding: 0.85rem 1.1rem;
+  padding: 0.75rem 0.9rem;
   box-shadow: var(--elev);
 }
+.status-copy { flex: 1; min-width: 0; }
 .status-banner.scanning {
   background: linear-gradient(135deg, #e6f7f4 0%, #f2fbfa 100%);
   border-color: #6fc4b6;
@@ -377,7 +371,6 @@ button { cursor: pointer; }
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.65rem;
-  margin-top: auto;
 }
 .metric {
   display: flex;
@@ -497,14 +490,17 @@ textarea {
     background: #1a2e2a;
   }
   .side-brand { border-bottom: 0; margin-bottom: 0; padding-bottom: 0.4rem; }
-  .side-nav { flex-direction: row; flex-wrap: wrap; flex: 1 1 auto; }
-  .side-account { width: auto; margin-left: auto; }
-  .side-signin, .side-profile { width: auto; }
-  .status-banner {
-    grid-template-columns: auto 1fr;
-    grid-template-rows: auto auto;
+  .side-nav { flex-direction: row; flex-wrap: wrap; }
+  .side-account {
+    width: auto;
+    margin-left: auto;
+    border-bottom: 0;
+    margin-bottom: 0;
+    padding-bottom: 0;
   }
-  .status-badge { grid-column: 1 / -1; }
+  .side-signin, .side-profile { width: auto; }
+  .status-banner { flex-wrap: wrap; }
+  .status-badge { width: 100%; }
   .scan-grid { grid-template-columns: 1fr; }
   .metric-row { grid-template-columns: 1fr; }
 }

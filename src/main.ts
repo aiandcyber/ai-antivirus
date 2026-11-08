@@ -236,7 +236,10 @@ function checkScam(text: string) {
 }
 
 document.querySelectorAll('.side-item').forEach((btn) => {
-  btn.addEventListener('click', () => show((btn as HTMLElement).dataset.view as View))
+  btn.addEventListener('click', () => {
+    const v = (btn as HTMLElement).dataset.view
+    if (v) show(v as View)
+  })
 })
 
 $('btn-quick').addEventListener('click', () => runScan('Quick Scan'))
