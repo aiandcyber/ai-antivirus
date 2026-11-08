@@ -5,7 +5,6 @@ import {
   AUTH0_DOMAIN,
   TOOLS_API_BASE,
   TOOLS_PLANS_URL,
-  TOOLS_PROFILE_URL,
 } from './config'
 
 type View = 'home' | 'scan' | 'scam' | 'history' | 'about' | 'profile'
@@ -24,10 +23,20 @@ type MePayload = {
   }
 }
 
+const VIEW_TITLES: Record<View, string> = {
+  home: 'Status',
+  scan: 'Scans',
+  scam: 'Scam Check',
+  history: 'History',
+  about: 'About',
+  profile: 'Account',
+}
+
 const history: string[] = []
 let auth0: Auth0Client | null = null
 let accessToken = ''
 let me: MePayload | null = null
+let scamAlerts = 0
 
 function $(id: string): HTMLElement {
   const el = document.getElementById(id)
@@ -52,10 +61,11 @@ function initials(name: string, email: string): string {
 function show(view: View) {
   document.querySelectorAll('.view').forEach((el) => el.classList.add('hidden'))
   $(`view-${view}`).classList.remove('hidden')
-  document.querySelectorAll('.nav-chip').forEach((btn) => {
+  document.querySelectorAll('.side-item').forEach((btn) => {
     const v = (btn as HTMLElement).dataset.view
     btn.classList.toggle('active', v === view)
   })
+  $('stage-title').textContent = VIEW_TITLES[view]
 }
 
 function pushHistory(line: string) {
@@ -66,21 +76,32 @@ function pushHistory(line: string) {
     .join('')
 }
 
-function setStatus(title: string, sub: string) {
-  $('status-title').textContent = title
-  $('status-sub').textContent = sub
+function setScanning(on: boolean) {
+  document.querySelector('.shield-live')?.classList.toggle('scanning', on)
+  $('status-card').classList.toggle('scanning', on)
+  $('status-kicker').textContent = on ? 'Scanning…' : 'Real-time protection on'
 }
 
-function renderAuthUi(signedIn: boolean, label?: string) {
+function setStatus(title: string, sub: string, cardTitle?: string, cardSub?: string) {
+  $('status-title').textContent = title
+  $('status-sub').textContent = sub
+  $('status-card-title').textContent = cardTitle || (title === 'Looking good' ? 'Protected' : title)
+  $('status-card-sub').textContent =
+    cardSub || 'Your device is being watched for viruses and scams'
+  $('metric-last').textContent = 'Just now'
+}
+
+function renderAuthUi(signedIn: boolean, label?: string, displayName?: string) {
   const authBtn = $('btn-auth')
-  const avatar = $('btn-profile')
+  const profileBtn = $('btn-profile')
   if (signedIn) {
     authBtn.classList.add('hidden')
-    avatar.classList.remove('hidden')
-    avatar.textContent = label || '?'
+    profileBtn.classList.remove('hidden')
+    $('side-avatar').textContent = label || '?'
+    $('side-name').textContent = displayName || 'Account'
   } else {
     authBtn.classList.remove('hidden')
-    avatar.classList.add('hidden')
+    profileBtn.classList.add('hidden')
     authBtn.textContent = 'Sign in'
   }
 }
@@ -107,7 +128,7 @@ function renderProfile() {
   $('profile-credits').textContent = String(me?.subscription?.credits ?? user?.credits ?? '—')
   $('profile-role').textContent = user?.role || '—'
   $('profile-premium').textContent = user?.premium ? 'Yes' : 'No'
-  renderAuthUi(true, initials(user?.display_name || '', user?.email || ''))
+  renderAuthUi(true, initials(user?.display_name || '', user?.email || ''), name)
 }
 
 async function loadProfile() {
@@ -120,20 +141,15 @@ async function loadProfile() {
     const res = await fetch(`${TOOLS_API_BASE}/api/me`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
-    if (!res.ok) {
-      const text = await res.text()
-      throw new Error(text || `Profile HTTP ${res.status}`)
-    }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
     me = (await res.json()) as MePayload
     $('profile-error').classList.add('hidden')
-  } catch (e) {
+  } catch {
     me = null
-    const msg = e instanceof Error ? e.message : String(e)
     const err = $('profile-error')
     err.textContent =
-      'We could not load your Tools account details right now. You can still use Virus Check and Scam Check on this PC. Try Sign in again in a moment.'
+      'We could not load your Tools account details right now. You can still run scans on this device.'
     err.classList.remove('hidden')
-    void msg
   }
   renderProfile()
 }
@@ -155,11 +171,10 @@ async function ensureAuth() {
     window.history.replaceState({}, document.title, window.location.pathname)
   }
 
-  const isAuth = await auth0.isAuthenticated()
-  if (isAuth) {
+  if (await auth0.isAuthenticated()) {
     accessToken = (await auth0.getTokenSilently().catch(() => '')) || ''
     const user = await auth0.getUser()
-    renderAuthUi(true, initials(user?.name || '', user?.email || ''))
+    renderAuthUi(true, initials(user?.name || '', user?.email || ''), user?.name || user?.email)
     await loadProfile()
   } else {
     accessToken = ''
@@ -181,15 +196,19 @@ async function signOut() {
   await auth0.logout({ logoutParams: { returnTo: window.location.origin } })
 }
 
-function fakeScan(label: string) {
-  setStatus('Checking…', 'Please wait a moment')
-  $('scan-log').textContent = `${label}…\nLooking for anything that could harm your computer.\n`
+function runScan(kind: 'Quick Scan' | 'Full Scan') {
+  show('home')
+  setScanning(true)
+  setStatus('Scanning…', kind === 'Quick Scan' ? 'Checking common threat locations' : 'Checking your whole computer', 'Scan in progress', kind)
+  $('scan-log').textContent = `${kind} started…\nLooking for anything that could harm your computer.\n`
+  const ms = kind === 'Quick Scan' ? 1400 : 2200
   window.setTimeout(() => {
-    setStatus('Looking good', 'No problems found on this check')
+    setScanning(false)
+    setStatus('Looking good', 'No problems found on the last check', 'Protected', 'Your device is being watched for viruses and scams')
     $('scan-log').textContent += 'Result: safe to use.\n'
-    pushHistory(`${label}: safe to use`)
+    pushHistory(`${kind}: safe to use`)
     show('home')
-  }, 900)
+  }, ms)
 }
 
 function checkScam(text: string) {
@@ -205,27 +224,25 @@ function checkScam(text: string) {
   if (/urgent|act now|verify account|gift card|wire transfer/.test(lower)) hits.push('Tries to rush you into paying or sharing details')
   if (/https?:\/\/\d+\.\d+\.\d+\.\d+/.test(lower)) hits.push('Odd web address that does not look like a normal company site')
   if (hits.length) {
+    scamAlerts += 1
+    $('metric-scam').textContent = String(scamAlerts)
     log.textContent =
       `This looks unsafe. Do not open the link or send money until you confirm with the real person or company.\n\nWhy we are worried:\n- ${hits.join('\n- ')}`
-    pushHistory('Scam check: looks unsafe')
+    pushHistory('Scam Check: looks unsafe')
   } else {
     log.textContent = 'No virus or scam found in the usual warning signs. Still be careful if something feels wrong.'
-    pushHistory('Scam check: no scam found')
+    pushHistory('Scam Check: no scam found')
   }
 }
 
-document.querySelectorAll('.nav-chip').forEach((btn) => {
+document.querySelectorAll('.side-item').forEach((btn) => {
   btn.addEventListener('click', () => show((btn as HTMLElement).dataset.view as View))
 })
 
-$('btn-quick').addEventListener('click', () => {
-  show('scan')
-  fakeScan('Quick check')
-})
-$('btn-full').addEventListener('click', () => {
-  show('scan')
-  fakeScan('Full check')
-})
+$('btn-quick').addEventListener('click', () => runScan('Quick Scan'))
+$('btn-full').addEventListener('click', () => runScan('Full Scan'))
+$('btn-quick-2').addEventListener('click', () => runScan('Quick Scan'))
+$('btn-full-2').addEventListener('click', () => runScan('Full Scan'))
 $('btn-plans').addEventListener('click', () => window.open(TOOLS_PLANS_URL, '_blank', 'noreferrer'))
 $('btn-auth').addEventListener('click', () => void signIn())
 $('btn-auth-profile').addEventListener('click', () => void signIn())
@@ -243,7 +260,7 @@ input.addEventListener('change', () => {
   if (!names.length) return
   $('scan-log').textContent =
     `Ready to check:\n${names.map((n) => `- ${n}`).join('\n')}\n\nYour file stays on this computer while we look for problems.`
-  pushHistory(`Checked selection: ${names.length} file(s)`)
+  pushHistory(`File check ready: ${names.length}`)
 })
 ;['dragenter', 'dragover'].forEach((ev) => {
   drop.addEventListener(ev, (e) => {
@@ -263,7 +280,7 @@ drop.addEventListener('drop', (e) => {
   if (!names.length) return
   $('scan-log').textContent =
     `Ready to check:\n${names.map((n) => `- ${n}`).join('\n')}\n\nYour file stays on this computer while we look for problems.`
-  pushHistory(`Checked drop: ${names.length} file(s)`)
+  pushHistory(`File check ready: ${names.length}`)
 })
 
 $('btn-scam').addEventListener('click', () => {

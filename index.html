@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Powered Anti-Virus — AI-forAll</title>
+    <title>AI Powered Anti-Virus</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Flex:opsz,wght@8..144,400;500;700&display=swap" />
@@ -11,65 +11,97 @@
     <link rel="stylesheet" href="/src/styles.css" />
   </head>
   <body>
-    <div class="app">
-      <header class="topbar">
-        <div class="brand-block">
+    <div class="app native">
+      <aside class="sidebar">
+        <div class="side-brand">
           <span class="brand-mark" aria-hidden="true"></span>
           <div>
-            <div class="brand-row">
-              <strong>AI Powered Anti-Virus</strong>
-              <span class="pill">Safety</span>
-            </div>
-            <a class="portal" href="https://tools.ai-forall.org" target="_blank" rel="noreferrer">AI-forAll Tools</a>
+            <strong>AI Anti-Virus</strong>
+            <small>AI-forAll</small>
           </div>
         </div>
-        <nav class="top-nav" aria-label="Primary">
-          <button type="button" class="nav-chip active" data-view="home">Home</button>
-          <button type="button" class="nav-chip" data-view="scan">Virus Check</button>
-          <button type="button" class="nav-chip" data-view="scam">Scam Check</button>
-          <button type="button" class="nav-chip" data-view="history">History</button>
-          <button type="button" class="nav-chip" data-view="about">About</button>
+        <nav class="side-nav" aria-label="Primary">
+          <button type="button" class="side-item active" data-view="home">
+            <span class="material-symbols-outlined" aria-hidden="true">shield</span>
+            Status
+          </button>
+          <button type="button" class="side-item" data-view="scan">
+            <span class="material-symbols-outlined" aria-hidden="true">radar</span>
+            Scans
+          </button>
+          <button type="button" class="side-item" data-view="scam">
+            <span class="material-symbols-outlined" aria-hidden="true">phishing</span>
+            Scam Check
+          </button>
+          <button type="button" class="side-item" data-view="history">
+            <span class="material-symbols-outlined" aria-hidden="true">history</span>
+            History
+          </button>
+          <button type="button" class="side-item" data-view="about">
+            <span class="material-symbols-outlined" aria-hidden="true">info</span>
+            About
+          </button>
         </nav>
-        <div class="account">
-          <button type="button" class="btn-text" id="btn-plans" title="Plans">Plans</button>
-          <button type="button" class="btn-primary" id="btn-auth">Sign in</button>
-          <button type="button" class="avatar hidden" id="btn-profile" title="Your account" aria-label="Your account">?</button>
+        <div class="side-account">
+          <button type="button" class="btn-primary side-signin" id="btn-auth">Sign in</button>
+          <button type="button" class="side-profile hidden" id="btn-profile" title="Your account">
+            <span class="avatar" id="side-avatar">?</span>
+            <span id="side-name">Account</span>
+          </button>
         </div>
-      </header>
+      </aside>
 
-      <div class="workspace">
+      <div class="stage">
+        <header class="stage-bar">
+          <h1 class="stage-title" id="stage-title">Status</h1>
+          <button type="button" class="btn-text" id="btn-plans">Plans</button>
+        </header>
+
         <main class="panel">
           <section id="view-home" class="view">
-            <div class="tool-hero">
-              <span class="material-symbols-outlined hero-icon" aria-hidden="true">verified_user</span>
-              <div>
-                <h1>Your PC is being watched for threats</h1>
-                <p>Stop harmful files and scam messages before they cost you money, photos, or login details — without you digging through complicated settings.</p>
+            <div class="status-hero">
+              <div class="shield-live" aria-hidden="true">
+                <span class="ring ring-a"></span>
+                <span class="ring ring-b"></span>
+                <span class="ring ring-c"></span>
+                <span class="shield-core material-symbols-outlined">shield</span>
+              </div>
+              <div class="status-copy">
+                <p class="status-kicker" id="status-kicker">Real-time protection on</p>
+                <h2 id="status-title">Looking good</h2>
+                <p id="status-sub">No problems found on the last check</p>
               </div>
             </div>
-            <div class="status-card safe">
-              <span class="material-symbols-outlined status-icon" aria-hidden="true">shield</span>
+
+            <div class="status-card safe" id="status-card">
+              <span class="dot-live" aria-hidden="true"></span>
               <div>
-                <strong id="status-title">Looking good</strong>
-                <span id="status-sub">No problems found on the last check</span>
+                <strong id="status-card-title">Protected</strong>
+                <span id="status-card-sub">Your device is being watched for viruses and scams</span>
               </div>
             </div>
-            <div class="actions">
-              <button type="button" class="btn-primary" id="btn-quick">Check now</button>
-              <button type="button" class="btn-outline" id="btn-full">Check everything</button>
+
+            <div class="scan-actions">
+              <button type="button" class="btn-primary btn-lg" id="btn-quick">Quick Scan</button>
+              <button type="button" class="btn-outline btn-lg" id="btn-full">Full Scan</button>
             </div>
-            <div class="tile-grid">
-              <article class="tile">
-                <span>Files</span>
-                <strong>Catch dangerous downloads before you open them</strong>
+            <p class="scan-hint muted">
+              <strong>Quick Scan</strong> checks the places threats usually hide — fast.
+              <strong>Full Scan</strong> checks your whole computer — takes longer.
+            </p>
+
+            <div class="metric-row">
+              <article class="metric">
+                <span>Last scan</span>
+                <strong id="metric-last">Just now</strong>
               </article>
-              <article class="tile">
-                <span>Messages</span>
-                <strong>Spot fake bank, delivery, and “urgent” scam texts</strong>
+              <article class="metric">
+                <span>Threats blocked</span>
+                <strong id="metric-blocked">0</strong>
               </article>
-              <article class="tile">
-                <span>Your account</span>
-                <strong>Same sign-in as Tools — one profile for the family</strong>
+              <article class="metric">
+                <span>Scam alerts</span>
+                <strong id="metric-scam">0</strong>
               </article>
             </div>
           </section>
@@ -78,30 +110,34 @@
             <div class="tool-hero">
               <span class="material-symbols-outlined hero-icon" aria-hidden="true">document_scanner</span>
               <div>
-                <h1>Virus Check</h1>
-                <p>Got a file from email, WhatsApp, or a download? Check it here before you open it — so you don’t lock your PC or lose your data.</p>
+                <h2>Scan a file</h2>
+                <p>Check a download or attachment before you open it.</p>
               </div>
+            </div>
+            <div class="scan-actions">
+              <button type="button" class="btn-primary" id="btn-quick-2">Quick Scan</button>
+              <button type="button" class="btn-outline" id="btn-full-2">Full Scan</button>
             </div>
             <div class="drop" id="drop">
               <span class="material-symbols-outlined" aria-hidden="true">upload_file</span>
-              <strong>Drop the file here</strong>
+              <strong>Drop a file here</strong>
               <span class="muted">or</span>
-              <button type="button" class="btn-outline" id="btn-pick">Choose a file</button>
+              <button type="button" class="btn-outline" id="btn-pick">Choose file</button>
               <input id="file-input" type="file" multiple hidden />
             </div>
-            <pre id="scan-log" class="log" aria-live="polite">Choose a file to check.</pre>
+            <pre id="scan-log" class="log" aria-live="polite">Choose Quick Scan, Full Scan, or a file.</pre>
           </section>
 
           <section id="view-scam" class="view hidden">
             <div class="tool-hero">
               <span class="material-symbols-outlined hero-icon" aria-hidden="true">phishing</span>
               <div>
-                <h1>Scam Check</h1>
-                <p>Paste a suspicious SMS, email, or chat. We’ll tell you if it looks like someone is trying to trick you into clicking or paying.</p>
+                <h2>Scam Check</h2>
+                <p>Paste a suspicious SMS, email, or chat before you tap any link.</p>
               </div>
             </div>
             <textarea id="scam-text" rows="6" placeholder="Paste the message or link here…"></textarea>
-            <button type="button" class="btn-primary" id="btn-scam">Is this a scam?</button>
+            <button type="button" class="btn-primary" id="btn-scam">Check message</button>
             <pre id="scam-log" class="log" aria-live="polite"></pre>
           </section>
 
@@ -109,12 +145,12 @@
             <div class="tool-hero">
               <span class="material-symbols-outlined hero-icon" aria-hidden="true">history</span>
               <div>
-                <h1>History</h1>
-                <p>See what you already checked on this computer — useful if you’re not sure about a file you looked at earlier.</p>
+                <h2>History</h2>
+                <p>Recent scans and scam checks on this device.</p>
               </div>
             </div>
             <ul id="history-list" class="history">
-              <li class="muted">Nothing checked yet.</li>
+              <li class="muted">No scans yet.</li>
             </ul>
           </section>
 
@@ -122,25 +158,24 @@
             <div class="tool-hero">
               <span class="material-symbols-outlined hero-icon" aria-hidden="true">info</span>
               <div>
-                <h1>How this helps you</h1>
-                <p>Built for homes, small businesses, and schools — people who need protection without a security team.</p>
+                <h2>About</h2>
+                <p>Protection for your Windows, Mac, and phone — for home, small business, and school.</p>
               </div>
             </div>
             <div class="card-stack">
               <article class="info-card">
-                <h2>What you get</h2>
+                <h3>What it does for you</h3>
                 <ul class="plain">
-                  <li>Warn you before a bad file damages your computer</li>
-                  <li>Help you spot scam messages that ask for money or passwords</li>
-                  <li>Keep checks on your device so everyday files don’t need to leave your PC</li>
-                  <li>Use the same AI-forAll sign-in you already use on Tools</li>
+                  <li>Warns you before a bad file damages your computer</li>
+                  <li>Helps you spot scam messages that ask for money or passwords</li>
+                  <li>Runs on your device so everyday checks stay private</li>
+                  <li>Uses the same AI-forAll sign-in as Tools</li>
                 </ul>
               </article>
               <article class="info-card">
-                <h2>Plans and your account</h2>
-                <p>Upgrade, credits, and family seats are managed in Tools — one place for everything.</p>
+                <h3>Your plan</h3>
+                <p>Manage plans and family seats in Tools.</p>
                 <a class="text-link" href="https://tools.ai-forall.org/plans" target="_blank" rel="noreferrer">View plans</a>
-                <a class="text-link" href="https://tools.ai-forall.org/profile" target="_blank" rel="noreferrer">Open your Tools profile</a>
               </article>
             </div>
           </section>
@@ -149,13 +184,13 @@
             <div class="tool-hero">
               <span class="material-symbols-outlined hero-icon" aria-hidden="true">person</span>
               <div>
-                <h1>Your account</h1>
-                <p>This is the same profile you use on AI-forAll Tools — name, plan, and credits in one place.</p>
+                <h2>Your account</h2>
+                <p>Same profile as AI-forAll Tools.</p>
               </div>
             </div>
             <p id="profile-error" class="error hidden"></p>
             <div id="profile-signed-out" class="info-card">
-              <p>Sign in to see your name, plan, and credits from Tools.</p>
+              <p>Sign in to see your name, plan, and credits.</p>
               <button type="button" class="btn-primary" id="btn-auth-profile">Sign in</button>
             </div>
             <div id="profile-card" class="info-card hidden">
