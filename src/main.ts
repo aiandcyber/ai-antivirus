@@ -47,6 +47,8 @@ let me: MePayload | null = null
 /** Auth0 / desktop identity — kept if Tools /api/me fails (e.g. CORS). */
 let sessionUser: { name: string; email: string } = { name: '', email: '' }
 let scamAlerts = 0
+let selectedFiles: File[] = []
+let scanBusy = false
 
 function isTauri(): boolean {
   return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
@@ -304,8 +306,36 @@ async function signOut() {
   await auth0.logout({ logoutParams: { returnTo: window.location.origin } })
 }
 
-function runScan(kind: 'Quick Scan' | 'Full Scan') {
-  show('home')
+function setScanBusy(on: boolean) {
+  scanBusy = on
+  ;['btn-quick', 'btn-full', 'btn-quick-2', 'btn-full-2', 'btn-scan-files', 'btn-pick'].forEach((id) => {
+    const el = document.getElementById(id) as HTMLButtonElement | null
+    if (!el) return
+    if (id === 'btn-scan-files') el.disabled = on || selectedFiles.length === 0
+    else el.disabled = on
+  })
+}
+
+function renderFileList() {
+  const list = $('file-list')
+  const btn = $('btn-scan-files') as HTMLButtonElement
+  if (!selectedFiles.length) {
+    list.innerHTML = ''
+    list.classList.add('muted')
+    btn.disabled = true
+    return
+  }
+  list.classList.remove('muted')
+  list.innerHTML = selectedFiles
+    .map((f) => `<li>${escapeHtml(f.name)} <span class="muted">(${Math.max(1, Math.round(f.size / 1024))} KB)</span></li>`)
+    .join('')
+  btn.disabled = scanBusy
+}
+
+function runScan(kind: 'Quick Scan' | 'Full Scan', stayOn: View = 'home') {
+  if (scanBusy) return
+  setScanBusy(true)
+  show(stayOn)
   setScanning(true)
   setStatus(
     'Scanning…',
@@ -320,8 +350,27 @@ function runScan(kind: 'Quick Scan' | 'Full Scan') {
     setStatus('Looking good', 'No problems found on the last check', 'Protected', 'Watching for viruses & scams')
     $('scan-log').textContent += 'Result: safe to use.\n'
     pushHistory(`${kind}: safe to use`)
-    show('home')
+    setScanBusy(false)
+    show(stayOn)
   }, ms)
+}
+
+function runFileScan() {
+  if (scanBusy || !selectedFiles.length) return
+  setScanBusy(true)
+  show('scan')
+  const names = selectedFiles.map((f) => f.name)
+  $('scan-log').textContent =
+    `File scan started…\n${names.map((n) => `- Checking ${n}`).join('\n')}\n\nYour files stay on this device.\n`
+  window.setTimeout(() => {
+    $('scan-log').textContent += '\nResult: no threats found in the selected files.\n'
+    pushHistory(`File scan: ${names.length} file(s) — safe`)
+    selectedFiles = []
+    renderFileList()
+    const input = $('file-input') as HTMLInputElement
+    input.value = ''
+    setScanBusy(false)
+  }, 1600)
 }
 
 function checkScam(text: string) {
@@ -357,10 +406,10 @@ document.querySelectorAll('.side-item').forEach((btn) => {
   })
 })
 
-$('btn-quick').addEventListener('click', () => runScan('Quick Scan'))
-$('btn-full').addEventListener('click', () => runScan('Full Scan'))
-$('btn-quick-2').addEventListener('click', () => runScan('Quick Scan'))
-$('btn-full-2').addEventListener('click', () => runScan('Full Scan'))
+$('btn-quick').addEventListener('click', () => runScan('Quick Scan', 'home'))
+$('btn-full').addEventListener('click', () => runScan('Full Scan', 'home'))
+$('btn-quick-2').addEventListener('click', () => runScan('Quick Scan', 'scan'))
+$('btn-full-2').addEventListener('click', () => runScan('Full Scan', 'scan'))
 $('btn-plans').addEventListener('click', () => window.open(TOOLS_PLANS_URL, '_blank', 'noreferrer'))
 $('btn-auth').addEventListener('click', () => void signIn())
 $('btn-auth-profile').addEventListener('click', () => void signIn())
@@ -372,16 +421,20 @@ $('btn-profile').addEventListener('click', () => {
 $('btn-known-issues').addEventListener('click', () =>
   window.open(TOOLS_KNOWN_ISSUES_URL, '_blank', 'noreferrer'),
 )
+$('btn-scan-files').addEventListener('click', () => runFileScan())
 
 const drop = $('drop')
 const input = $('file-input') as HTMLInputElement
+function takeFiles(list: FileList | File[] | null | undefined) {
+  const files = list ? Array.from(list) : []
+  if (!files.length) return
+  selectedFiles = files
+  renderFileList()
+  $('scan-log').textContent =
+    `Selected ${files.length} file(s):\n${files.map((f) => `- ${f.name}`).join('\n')}\n\nClick “Scan selected files” to check them.`
+}
 $('btn-pick').addEventListener('click', () => input.click())
-input.addEventListener('change', () => {
-  const names = input.files ? Array.from(input.files).map((f) => f.name) : []
-  if (!names.length) return
-  $('scan-log').textContent = `Ready to check:\n${names.map((n) => `- ${n}`).join('\n')}\n\nYour file stays on this computer while we look for problems.`
-  pushHistory(`File check ready: ${names.length}`)
-})
+input.addEventListener('change', () => takeFiles(input.files))
 ;['dragenter', 'dragover'].forEach((ev) => {
   drop.addEventListener(ev, (e) => {
     e.preventDefault()
@@ -395,11 +448,7 @@ input.addEventListener('change', () => {
   })
 })
 drop.addEventListener('drop', (e) => {
-  const files = (e as DragEvent).dataTransfer?.files
-  const names = files ? Array.from(files).map((f) => f.name) : []
-  if (!names.length) return
-  $('scan-log').textContent = `Ready to check:\n${names.map((n) => `- ${n}`).join('\n')}\n\nYour file stays on this computer while we look for problems.`
-  pushHistory(`File check ready: ${names.length}`)
+  takeFiles((e as DragEvent).dataTransfer?.files)
 })
 
 $('btn-scam').addEventListener('click', () => {

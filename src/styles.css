@@ -435,10 +435,22 @@ button { cursor: pointer; }
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
-  margin: 0.75rem 0;
+  margin: 0.75rem 0 0.5rem;
 }
 .drop.drag { border-color: var(--sea); background: var(--md-sys-color-primary-container); }
 .drop .material-symbols-outlined { font-size: 1.75rem; color: var(--sea); }
+.file-list {
+  list-style: none;
+  margin: 0 0 0.65rem;
+  padding: 0;
+  font-size: 0.88rem;
+}
+.file-list li {
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--line);
+}
+#btn-scan-files { margin-bottom: 0.75rem; }
+#view-scan .scan-grid { margin-bottom: 0.85rem; }
 
 textarea {
   width: 100%;

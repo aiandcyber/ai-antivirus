@@ -130,21 +130,37 @@
             <div class="tool-hero">
               <span class="material-symbols-outlined hero-icon" aria-hidden="true">document_scanner</span>
               <div>
-                <h2>Scan a file</h2>
-                <p>Check a download or attachment before you open it.</p>
+                <h2>Scans</h2>
+                <p>Run a device scan, or check a file before you open it.</p>
               </div>
             </div>
-            <div class="scan-actions">
-              <button type="button" class="btn-primary" id="btn-quick-2">Quick Scan</button>
-              <button type="button" class="btn-outline" id="btn-full-2">Full Scan</button>
+            <div class="scan-grid">
+              <button type="button" class="scan-tile primary" id="btn-quick-2">
+                <span class="scan-tile-icon material-symbols-outlined" aria-hidden="true">bolt</span>
+                <span class="scan-tile-body">
+                  <strong>Quick Scan</strong>
+                  <span>Common threat locations · ~1 min</span>
+                </span>
+                <span class="scan-tile-go material-symbols-outlined" aria-hidden="true">chevron_right</span>
+              </button>
+              <button type="button" class="scan-tile" id="btn-full-2">
+                <span class="scan-tile-icon material-symbols-outlined" aria-hidden="true">travel_explore</span>
+                <span class="scan-tile-body">
+                  <strong>Full Scan</strong>
+                  <span>Entire device · thorough check</span>
+                </span>
+                <span class="scan-tile-go material-symbols-outlined" aria-hidden="true">chevron_right</span>
+              </button>
             </div>
             <div class="drop" id="drop">
               <span class="material-symbols-outlined" aria-hidden="true">upload_file</span>
-              <strong>Drop a file here</strong>
+              <strong>Drop a file here to scan</strong>
               <span class="muted">or</span>
               <button type="button" class="btn-outline" id="btn-pick">Choose file</button>
               <input id="file-input" type="file" multiple hidden />
             </div>
+            <ul id="file-list" class="file-list muted" aria-live="polite"></ul>
+            <button type="button" class="btn-primary" id="btn-scan-files" disabled>Scan selected files</button>
             <pre id="scan-log" class="log" aria-live="polite">Choose Quick Scan, Full Scan, or a file.</pre>
           </section>
 
