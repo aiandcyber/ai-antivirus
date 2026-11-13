@@ -1,0 +1,70 @@
+# WSL: edit + push. GitHub Actions builds Windows + macOS installers.
+# Mac: macos-latest runner (no local Mac required). Unsigned until Apple cert secrets are added.
+name: Tauri desktop release
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install frontend deps
+        run: npm ci
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: .
+          tagName: app-v__VERSION__
+          releaseName: "AI Powered Anti-Virus v__VERSION__"
+          releaseBody: "Desktop installers from CI. Windows: .msi/.exe. macOS: .dmg/.app (unsigned until Apple notarization is configured)."
+          releaseDraft: false
+          prerelease: false
+          args: ""
+
+  publish-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install frontend deps
+        run: npm ci
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: .
+          tagName: app-v__VERSION__
+          releaseName: "AI Powered Anti-Virus v__VERSION__"
+          releaseBody: "Desktop installers from CI. Windows: .msi/.exe. macOS: .dmg/.app (unsigned until Apple notarization is configured)."
+          releaseDraft: false
+          prerelease: false
+          args: ""
