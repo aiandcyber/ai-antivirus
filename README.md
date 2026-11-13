@@ -17,7 +17,10 @@ WSL edit → `git push` → GitHub Actions (`.github/workflows/tauri-release.yml
 - **Windows** on `windows-latest`
 - **macOS** on `macos-latest` (`.dmg` / `.app`)
 
-Artifacts land on the repo **Releases** page. Mac builds are **unsigned** until Apple signing/notarization secrets are added (Gatekeeper will warn).
+**User download page** (images + Download buttons, no file list): enable GitHub Pages for `/docs`  
+→ https://aiandcyber.github.io/ai-antivirus/
+
+Tools app also auto-picks the right `.exe` / `.dmg` from the latest Release. Mac builds are **unsigned** until Apple notarization secrets are added.
 
 Manual Windows build (optional, after `git pull` on Windows):
 
