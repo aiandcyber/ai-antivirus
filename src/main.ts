@@ -9,7 +9,7 @@ import {
   TOOLS_PLANS_URL,
 } from './config'
 
-type View = 'home' | 'scan' | 'scam' | 'history' | 'about' | 'profile'
+type View = 'home' | 'scan' | 'scam' | 'history' | 'about' | 'contact' | 'profile'
 
 type MePayload = {
   user?: {
@@ -37,6 +37,7 @@ const VIEW_TITLES: Record<View, string> = {
   scam: 'Scam Check',
   history: 'History',
   about: 'About',
+  contact: 'Contact us',
   profile: 'Account',
 }
 
