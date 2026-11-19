@@ -1,5 +1,6 @@
 import { createAuth0Client, type Auth0Client } from '@auth0/auth0-spa-js'
 import { invoke } from '@tauri-apps/api/core'
+import { mountAgentPanel } from './agentPanel'
 import {
   AUTH0_AUDIENCE,
   AUTH0_CLIENT_ID,
@@ -546,4 +547,15 @@ $('metric-scam-wrap').addEventListener('click', (e) => {
 })
 
 updateScamMetric()
+
+const agentApiBase = TOOLS_API_BASE.startsWith('http')
+  ? TOOLS_API_BASE
+  : 'https://api.tools.ai-forall.org'
+mountAgentPanel({
+  mount: $('agent-root'),
+  toolsApiBase: agentApiBase,
+  productHint: 'AI Powered Anti-Virus desktop app (Windows/Mac)',
+  getAccessToken: async () => (accessToken ? accessToken : null),
+})
+
 void ensureAuth().then(() => show('home'))
