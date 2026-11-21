@@ -1,6 +1,6 @@
 /* Native AV shell — dense dashboard (Defender / Bitdefender style) */
 :root {
-  --md-sys-color-primary: #0d6e66;
+  --md-sys-color-primary: #0d9488;
   --md-sys-color-on-primary: #ffffff;
   --md-sys-color-primary-container: #c8f5ec;
   --md-sys-color-on-primary-container: #0a3d39;
@@ -40,7 +40,7 @@ button { cursor: pointer; }
   height: 100vh;
   height: 100dvh;
   display: grid;
-  grid-template-columns: 200px minmax(0, 1fr) minmax(300px, 360px);
+  grid-template-columns: 200px minmax(0, 1fr) minmax(380px, 420px);
   background: var(--paper);
 }
 
@@ -569,38 +569,4 @@ textarea {
   margin-bottom: 0.75rem;
 }
 
-@media (max-width: 1100px) {
-  .app.native {
-    grid-template-columns: 200px minmax(0, 1fr);
-    grid-template-rows: 1fr minmax(260px, 36vh);
-  }
-  .agent-root {
-    grid-column: 1 / -1;
-    border-top: 1px solid var(--line);
-  }
-}
-
-@media (max-width: 820px) {
-  .app.native { grid-template-columns: 1fr; grid-template-rows: auto 1fr minmax(240px, 36vh); }
-  .sidebar {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.4rem;
-    background: #1a2e2a;
-  }
-  .side-brand { border-bottom: 0; margin-bottom: 0; padding-bottom: 0.4rem; }
-  .side-nav { flex-direction: row; flex-wrap: wrap; }
-  .side-account {
-    width: auto;
-    margin-left: auto;
-    border-bottom: 0;
-    margin-bottom: 0;
-    padding-bottom: 0;
-  }
-  .side-signin, .side-profile { width: auto; }
-  .status-banner { flex-wrap: wrap; }
-  .status-badge { width: 100%; }
-  .scan-grid { grid-template-columns: 1fr; }
-  .metric-row { grid-template-columns: 1fr; }
-}
+/* Desktop stays 3-column (sidebar | stage | agent). Min window width prevents stacking. */

@@ -207,27 +207,60 @@ async function loadProfile() {
   renderProfile()
 }
 
+async function applyDesktopAuth(info: DesktopAuthInfo) {
+  if (info.signed_in) {
+    accessToken = info.access_token || ''
+    setSessionUser(info.email, info.email)
+    renderAuthUi(true, initials('', info.email || ''), info.email || 'Account')
+    await loadProfile()
+  } else {
+    accessToken = ''
+    me = null
+    setSessionUser('', '')
+    renderAuthUi(false)
+    renderProfile()
+  }
+}
+
 async function ensureAuthDesktop() {
   try {
-    const info = await invoke<DesktopAuthInfo>('get_auth')
-    if (info.signed_in) {
-      accessToken = info.access_token || ''
-      setSessionUser(info.email, info.email)
-      renderAuthUi(true, initials('', info.email || ''), info.email || 'Account')
-      await loadProfile()
-    } else {
+    const info = await invoke<DesktopAuthInfo>('restore_session')
+    await applyDesktopAuth(info)
+  } catch {
+    try {
+      const info = await invoke<DesktopAuthInfo>('get_auth')
+      await applyDesktopAuth(info)
+    } catch {
       accessToken = ''
       me = null
       setSessionUser('', '')
       renderAuthUi(false)
       renderProfile()
     }
+  }
+}
+
+async function loadContactFromServer() {
+  const emailEl = document.querySelector<HTMLAnchorElement>('#contact-email')
+  const webEl = document.querySelector<HTMLAnchorElement>('#contact-website')
+  if (!emailEl || !webEl) return
+  try {
+    const res = await fetch(`${TOOLS_API_BASE}/api/desktop/contact`)
+    if (!res.ok) throw new Error(String(res.status))
+    const data = (await res.json()) as { email?: string; website_url?: string }
+    const email = (data.email || '').trim()
+    const website = (data.website_url || '').trim()
+    if (email) {
+      emailEl.href = `mailto:${email}`
+      emailEl.textContent = email
+    }
+    if (website) {
+      webEl.href = website
+      webEl.textContent = website
+    }
   } catch {
-    accessToken = ''
-    me = null
-    setSessionUser('', '')
-    renderAuthUi(false)
-    renderProfile()
+    emailEl.textContent = 'Unavailable'
+    webEl.textContent = 'Unavailable'
   }
 }
 
@@ -555,7 +588,21 @@ mountAgentPanel({
   mount: $('agent-root'),
   toolsApiBase: agentApiBase,
   productHint: 'AI Powered Anti-Virus desktop app (Windows/Mac)',
-  getAccessToken: async () => (accessToken ? accessToken : null),
+  getAccessToken: async () => {
+    if (isTauri()) {
+      try {
+        const info = await invoke<DesktopAuthInfo>('get_auth')
+        if (info.signed_in) {
+          accessToken = info.access_token || ''
+          return accessToken || null
+        }
+      } catch {
+        /* fall through */
+      }
+    }
+    return accessToken || null
+  },
 })
 
+void loadContactFromServer()
 void ensureAuth().then(() => show('home'))
